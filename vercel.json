@@ -1,7 +1,8 @@
 {
-  "version": 2,
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/address-format-converter.htmll" }
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/address-format-converter.html"
+    }
   ]
 }
