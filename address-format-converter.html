@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地址格式转换工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-dark mb-3">地址格式转换工具</h1>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+                轻松实现 Axiom、GMGN 和 Debot 地址格式之间的相互转换
+            </p>
+        </header>
+
+        <!-- 主要转换区域 -->
+        <main class="grid md:grid-cols-2 gap-8">
+            <!-- 输入区域 -->
+            <div class="bg-white rounded-xl p-6 card-shadow transform hover:-translate-y-1 transition-all-300">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">输入格式</label>
+                    <div class="flex gap-2">
+                        <button id="input-axiom" class="format-btn bg-primary text-white px-4 py-2 rounded-lg flex-1 transition-all-300">Axiom</button>
+                        <button id="input-gmgn" class="format-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex-1 transition-all-300">GMGN</button>
+                        <button id="input-debot" class="format-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex-1 transition-all-300">Debot</button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="input-text" class="block text-sm font-medium text-slate-700 mb-2">输入内容</label>
+                    <textarea id="input-text" rows="10" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all-300 resize-none" placeholder="粘贴要转换的地址内容..."></textarea>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <button id="clear-input" class="text-slate-600 hover:text-red-500 transition-all-300 flex items-center gap-1">
+                        <i class="fa fa-trash"></i> 清空
+                    </button>
+                    <button id="convert-btn" class="bg-secondary hover:bg-secondary/90 text-white px-6 py-2 rounded-lg transition-all-300 flex items-center gap-2">
+                        <i class="fa fa-exchange"></i> 转换
+                    </button>
+                </div>
+            </div>
+
+            <!-- 输出区域 -->
+            <div class="bg-white rounded-xl p-6 card-shadow transform hover:-translate-y-1 transition-all-300">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">输出格式</label>
+                    <div class="flex gap-2">
+                        <button id="output-axiom" class="format-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex-1 transition-all-300">Axiom</button>
+                        <button id="output-gmgn" class="format-btn bg-primary text-white px-4 py-2 rounded-lg flex-1 transition-all-300">GMGN</button>
+                        <button id="output-debot" class="format-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-lg flex-1 transition-all-300">Debot</button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="output-text" class="block text-sm font-medium text-slate-700 mb-2">转换结果</label>
+                    <textarea id="output-text" rows="10" class="w-full px-4 py-3 border border-slate-300 rounded-lg bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary transition-all-300 resize-none" placeholder="转换后的结果将显示在这里..." readonly></textarea>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="copy-output" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2 rounded-lg transition-all-300 flex items-center gap-2">
+                        <i class="fa fa-copy"></i> 复制结果
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- 格式示例区域 -->
+        <section class="mt-12 mb-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">格式示例</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Axiom 格式示例 -->
+                <div class="bg-white rounded-xl p-5 card-shadow">
+                    <h3 class="text-lg font-semibold mb-3 text-primary flex items-center gap-2">
+                        <i class="fa fa-code"></i> Axiom 格式
+                    </h3>
+                    <div class="mb-2 text-xs text-slate-500">导入导出格式相同</div>
+                    <pre class="text-sm bg-slate-50 p-3 rounded-lg overflow-x-auto text-slate-700"><code>[
+  {
+    "trackedWalletAddress": "DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm",
+    "name": "DNF",
+    "emoji": "👻",
+    "alertsOnToast": true,
+    "alertsOnBubble": true,
+    "alertsOnFeed": true,
+    "groups": [
+      "Main"
+    ],
+    "sound": "default"
+  }
+]</code></pre>
+                </div>
+
+                <!-- GMGN 格式示例 -->
+                <div class="bg-white rounded-xl p-5 card-shadow">
+                    <h3 class="text-lg font-semibold mb-3 text-primary flex items-center gap-2">
+                        <i class="fa fa-code"></i> GMGN 格式
+                    </h3>
+                    <div class="mb-2 text-xs text-slate-500">导入导出格式不同</div>
+                    <div class="mb-3">
+                        <div class="text-xs font-medium text-slate-600 mb-1">导入格式：</div>
+                        <pre class="text-sm bg-slate-50 p-2 rounded overflow-x-auto text-slate-700"><code>8v6ztxZwhPBNmA6aGrBzzrt6UBf2fZZfsWqZ9Lt47Kpv:FWOG开发者,
+DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm:DNF,</code></pre>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-slate-600 mb-1">导出格式：</div>
+                        <pre class="text-sm bg-slate-50 p-2 rounded overflow-x-auto text-slate-700"><code>[
+  {
+    "address": "DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm",
+    "name": "DNF",
+    "emoji": ""
+  }
+]</code></pre>
+                    </div>
+                </div>
+
+                <!-- Debot 格式示例 -->
+                <div class="bg-white rounded-xl p-5 card-shadow">
+                    <h3 class="text-lg font-semibold mb-3 text-primary flex items-center gap-2">
+                        <i class="fa fa-code"></i> Debot 格式
+                    </h3>
+                    <div class="mb-2 text-xs text-slate-500">导入导出格式相同</div>
+                    <pre class="text-sm bg-slate-50 p-3 rounded-lg overflow-x-auto text-slate-700"><code>8v6ztxZwhPBNmA6aGrBzzrt6UBf2fZZfsWqZ9Lt47Kpv	FWOG开发者
+DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm	DNF</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 备注说明 -->
+        <section class="bg-blue-50 border-l-4 border-primary p-5 rounded-r-lg mb-8">
+            <h3 class="font-semibold text-lg mb-2 flex items-center gap-2">
+                <i class="fa fa-info-circle text-primary"></i> 备注说明
+            </h3>
+            <p class="text-slate-700 mb-3">
+                本工具仅用于钱包地址格式转换，方便用户管理聪明钱地址。工具不会处理任何私钥信息，所有转换操作均在本地完成，您的数据不会被上传或分享，请放心使用。
+            </p>
+            <p class="text-slate-700 text-sm mb-2">
+                <i class="fa fa-exclamation-circle text-primary"></i> 注意：Axiom和Debot的导入导出格式相同，GMGN的导入导出格式不同，请留意格式示例。
+            </p>
+            <p class="text-slate-700 text-sm">
+                <i class="fa fa-exclamation-circle text-primary"></i> 转换说明：从Axiom格式转换时会自动忽略emoji头像，避免影响目标格式的头像设置。
+            </p>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="text-center text-slate-500 text-sm py-4">
+            <p>Powered by liangfuwang, Copyright © 2025</p>
+        </footer>
+    </div>
+
+    <!-- 通知提示框 -->
+    <div id="notification" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-all-300 flex items-center gap-3"></div>
+
+    <script>
+        // 全局变量
+        let inputFormat = 'axiom';
+        let outputFormat = 'gmgn';
+
+        // DOM 元素
+        const inputText = document.getElementById('input-text');
+        const outputText = document.getElementById('output-text');
+        const convertBtn = document.getElementById('convert-btn');
+        const clearInputBtn = document.getElementById('clear-input');
+        const copyOutputBtn = document.getElementById('copy-output');
+        const notification = document.getElementById('notification');
+        const formatBtns = document.querySelectorAll('.format-btn');
+
+        // 初始化格式按钮事件
+        formatBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 重置所有按钮样式
+                formatBtns.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white');
+                    b.classList.add('bg-slate-200', 'text-slate-700');
+                });
+                
+                // 设置当前按钮样式
+                btn.classList.remove('bg-slate-200', 'text-slate-700');
+                btn.classList.add('bg-primary', 'text-white');
+                
+                // 更新当前格式
+                if (btn.id.startsWith('input-')) {
+                    inputFormat = btn.id.split('-')[1];
+                } else {
+                    outputFormat = btn.id.split('-')[1];
+                }
+            });
+        });
+
+        // 显示通知
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
+            notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500', 'text-white');
+            notification.classList.remove('translate-x-full');
+            notification.classList.add('translate-x-0');
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-0');
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // 转换函数
+        function convert() {
+            try {
+                const input = inputText.value.trim();
+                if (!input) {
+                    showNotification('请输入要转换的内容', true);
+                    return;
+                }
+
+                let data;
+                
+                // 解析输入格式
+                if (inputFormat === 'axiom') {
+                    data = parseAxiom(input);
+                } else if (inputFormat === 'gmgn') {
+                    data = parseGmgn(input);
+                } else if (inputFormat === 'debot') {
+                    data = parseDebot(input);
+                }
+
+                // 转换为输出格式
+                let output;
+                if (outputFormat === 'axiom') {
+                    output = convertToAxiom(data);
+                } else if (outputFormat === 'gmgn') {
+                    output = convertToGmgn(data);
+                } else if (outputFormat === 'debot') {
+                    output = convertToDebot(data);
+                }
+
+                outputText.value = output;
+                showNotification('转换成功！');
+            } catch (error) {
+                console.error('转换错误:', error);
+                showNotification(`转换失败: ${error.message}`, true);
+            }
+        }
+
+        // 解析 Axiom 格式 (导入导出格式相同)
+        function parseAxiom(input) {
+            try {
+                const json = JSON.parse(input);
+                if (!Array.isArray(json)) {
+                    throw new Error('Axiom 格式应为数组');
+                }
+                
+                return json.map(item => ({
+                    address: item.trackedWalletAddress,
+                    name: item.name || '',
+                    // 解析时保留emoji，但在转换到其他格式时会忽略
+                    emoji: item.emoji || ''
+                }));
+            } catch (error) {
+                throw new Error(`解析 Axiom 格式失败: ${error.message}`);
+            }
+        }
+
+        // 解析 GMGN 格式 (导入格式特殊处理)
+        function parseGmgn(input) {
+            try {
+                // 检查是否为JSON格式（可能是导出格式作为输入）
+                if (input.trim().startsWith('[')) {
+                    const json = JSON.parse(input);
+                    if (Array.isArray(json)) {
+                        return json.map(item => ({
+                            address: item.address,
+                            name: item.name || '',
+                            emoji: item.emoji || ''
+                        }));
+                    }
+                }
+                
+                // 处理GMGN导入格式: 地址:名称,
+                const lines = input.split(',').filter(line => line.trim() !== '');
+                return lines.map(line => {
+                    const [address, ...nameParts] = line.split(':');
+                    if (!address) {
+                        throw new Error('GMGN 格式每行必须包含地址');
+                    }
+                    return {
+                        address: address.trim(),
+                        name: nameParts.join(':').trim() || '',
+                        emoji: ''
+                    };
+                });
+            } catch (error) {
+                throw new Error(`解析 GMGN 格式失败: ${error.message}`);
+            }
+        }
+
+        // 解析 Debot 格式 (导入导出格式相同)
+        function parseDebot(input) {
+            try {
+                const lines = input.split('\n').filter(line => line.trim() !== '');
+                return lines.map(line => {
+                    const [address, ...nameParts] = line.split('\t');
+                    if (!address) {
+                        throw new Error('Debot 格式每行必须包含地址');
+                    }
+                    return {
+                        address: address.trim(),
+                        name: nameParts.join('\t').trim() || '',
+                        emoji: ''
+                    };
+                });
+            } catch (error) {
+                throw new Error(`解析 Debot 格式失败: ${error.message}`);
+            }
+        }
+
+        // 转换为 Axiom 格式 (导入导出格式相同)
+        function convertToAxiom(data) {
+            const axiomData = data.map(item => ({
+                trackedWalletAddress: item.address,
+                name: item.name,
+                // 转换为Axiom时保留emoji（如果有）
+                emoji: item.emoji || '👻',
+                alertsOnToast: true,
+                alertsOnBubble: true,
+                alertsOnFeed: true,
+                groups: ['Main'],
+                sound: 'default'
+            }));
+            return JSON.stringify(axiomData, null, 2);
+        }
+
+        // 转换为 GMGN 格式 (导出格式为JSON数组)
+        function convertToGmgn(data) {
+            const gmgnData = data.map(item => ({
+                address: item.address,
+                name: item.name,
+                // 转换为GMGN时忽略emoji
+                emoji: ''
+            }));
+            // 输出带外层数组的JSON格式，符合GMGN导出格式
+            return JSON.stringify(gmgnData, null, 2);
+        }
+
+        // 转换为 Debot 格式 (导入导出格式相同)
+        function convertToDebot(data) {
+            return data.map(item => {
+                // 转换为Debot时忽略emoji，只使用名称
+                return `${item.address}\t${item.name}`;
+            }).join('\n');
+        }
+
+        // 事件监听
+        convertBtn.addEventListener('click', convert);
+        
+        clearInputBtn.addEventListener('click', () => {
+            inputText.value = '';
+            showNotification('已清空输入');
+        });
+        
+        copyOutputBtn.addEventListener('click', () => {
+            if (outputText.value.trim()) {
+                outputText.select();
+                document.execCommand('copy');
+                showNotification('已复制到剪贴板');
+            } else {
+                showNotification('没有可复制的内容', true);
+            }
+        });
+
+        // 按Enter键触发转换
+        inputText.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                convert();
+            }
+        });
+    </script>
+</body>
+</html>
+    
